@@ -26,64 +26,60 @@ To install all dependencies, use:
 pip install -r requirements.txt
 ```
 
-How to Use
-1. Training the Model
+## How to Use
+### 1. Training the Model
 To train the SAC model, run the following command:
 ```bash
 python main.py --train
 ```
+
 This will:
+- Start training for 10 episodes.
+- Save the trained model to sac_policy_vanet.pth.
 
-Start training for 10 episodes.
 
-Save the trained model to sac_policy_vanet.pth.
+### 2. Evaluating the Model
 
-2. Evaluating the Model
 To evaluate the trained model, run:
 ```bash
 python main.py --eval
 ```
+
 This will:
+- Evaluate the model over 3 episodes and print the results (Beacon Rate, Transmit Power, etc.).
 
-Evaluate the model over 3 episodes and print the results (Beacon Rate, Transmit Power, etc.).
 
-3. Running the Inference Server
+### 3. Running the Inference Server
+
 To run the inference server, which listens for incoming data on localhost:5000, use:
 ```
 python main.py --serve
 ```
+
 The server will:
+- Accept incoming data.
+- Process the data with the trained model.
+- Return the optimized values.
 
-Accept incoming data in the format [beaconRate, txPower, CBR, SNR, MCS].
 
-Process the data with the trained model.
+## File Details
+### vanet_env.py
+<p>Defines the custom environment for VANET communication. It uses gymnasium for easy integration with reinforcement learning algorithms. The environment simulates a communication scenario where the agent optimizes the Beacon Rate and Transmit Power while keeping CBR and SNR in check. </p>
 
-Return the optimized values [beaconRate, txPower, MCS].
+### sac_agent.py
+<p>Contains the definition of the SAC agent:
+- Policy Network: For selecting actions.
+- Q-Networks: To estimate the Q-value of actions.
+- Replay Buffer: To store past experiences during training.</p>
 
-File Details
-vanet_env.py
-Defines the custom environment for VANET communication. It uses gymnasium for easy integration with reinforcement learning algorithms. The environment simulates a communication scenario where the agent optimizes the Beacon Rate and Transmit Power while keeping CBR and SNR in check.
+### train_and_evaluate.py
+<p>Contains functions for training the SAC agent and evaluating its performance. The trained model is saved as sac_policy_vanet.pth for later use in inference.</p>
 
-sac_agent.py
-Contains the definition of the SAC agent:
+### inference_server.py
+<p>This script starts a server listening on localhost:5000, receives state observations, and sends back the optimized actions (beacon rate, transmit power, and MCS).</p>
 
-Policy Network: For selecting actions.
-
-Q-Networks: To estimate the Q-value of actions.
-
-Replay Buffer: To store past experiences during training.
-
-train_and_evaluate.py
-Contains functions for training the SAC agent and evaluating its performance. The trained model is saved as sac_policy_vanet.pth for later use in inference.
-
-inference_server.py
-This script starts a server listening on localhost:5000, receives state observations, and sends back the optimized actions (beacon rate, transmit power, and MCS).
-
-main.py
-This is the entry point for running training, evaluation, or inference. You can control which action to run through command-line arguments:
-
---train: Train the model.
-
---eval: Evaluate the model.
-
---serve: Run the inference server.
+### main.py
+<p>This is the entry point for running training, evaluation, or inference. You can control which action to run through command-line arguments:</p>
+<div>--train: Train the model.</div>
+<div>--eval: Evaluate the model.</div>
+<div>--serve: Run the inference server.</div>
