@@ -1,6 +1,7 @@
 import argparse
 from train_and_evaluate import train_sac_on_environment, evaluate_sac_model
 import subprocess
+import sys
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
@@ -14,4 +15,4 @@ if __name__ == "__main__":
     if args.eval:
         evaluate_sac_model()
     if args.serve:
-        subprocess.run(["python", "inference_server.py"])
+        subprocess.run([sys.executable, "inference_server.py"])

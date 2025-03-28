@@ -2,6 +2,7 @@ import torch
 import logging
 from vanet_env import VANETCommEnv
 from sac_agent import SACAgent
+import numpy as np
 
 logging.basicConfig(level=logging.INFO)
 
