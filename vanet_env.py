@@ -6,13 +6,13 @@ class VANETCommEnv(gym.Env):
     def __init__(self):
         super().__init__()
         self.observation_space = spaces.Box(
-            low=np.array([1.0, 0.0, 0.0, 0.0]),  # [beaconRate, txPower, CBR, SNR]
-            high=np.array([10.0, 20.0, 1.0, 50.0]),
+            low=np.array([3.0, 10.0, 0.1, 15.0]),  # [beaconRate, txPower, CBR, SNR]
+            high=np.array([10.0, 35.0, 1.0, 50.0]),
             dtype=np.float32
         )
         self.action_space = spaces.Box(
-            low=np.array([1.0, 0.0]),  # [beaconRate, txPower]
-            high=np.array([10.0, 20.0]),
+            low=np.array([3.0, 10.0]),  # [beaconRate, txPower]
+            high=np.array([10.0, 35.0]),
             dtype=np.float32
         )
         self.state = None
@@ -22,28 +22,51 @@ class VANETCommEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.state = np.array([
-            np.random.uniform(1.0, 10.0),     # beaconRate
-            np.random.uniform(0.0, 20.0),     # txPower
-            np.random.uniform(0.1, 0.4),      # CBR
-            np.random.uniform(25, 35)         # SNR
+            np.random.uniform(3.0, 10.0),     # beaconRate
+            np.random.uniform(10.0, 35.0),    # txPower
+            np.random.uniform(0.1, 0.8),      # CBR
+            np.random.uniform(15.0, 50.0)     # SNR
         ], dtype=np.float32)
         self.step_count = 0
         return self.state, {}
 
     def step(self, action):
         beacon_rate, tx_power = action
+        prev_tx_power = self.state[1]
         self.step_count += 1
 
-        cbr = min(1.0, self.state[2] + (beacon_rate * tx_power * 0.0005))
-        snr = self.state[3] + (tx_power * 0.1) - (self.state[0] * 0.05)
+        # Aproksimasi CBR dan SNR dari beacon_rate dan tx_power
+        cbr = min(1.0, 0.0008 * beacon_rate * tx_power)
+        snr = max(0, min(50, 0.9 * tx_power - 0.6 * beacon_rate + np.random.normal(0, 1)))
 
-        reward = 0
-        if cbr > 0.6:
-            reward -= (cbr - 0.6) * 10
-        if snr < 25:
-            reward -= (25 - snr) * 5
-        if 0.3 < cbr <= 0.6 and snr >= 25:
-            reward += 10
+        # --- Hitung reward ---
+        omega_c = 2
+        omega_p = 0.25
+        target_cbr = 0.6
+        target_snr = 27.5
+        snr_tolerance = 10
+
+        # CBR reward
+        g_cbr = -np.sign(cbr - target_cbr) * cbr
+        reward_cbr = omega_c * g_cbr
+
+        # Delta Power reward
+        reward_power = -omega_p * abs(tx_power - prev_tx_power)
+
+        # SNR reward (continuous)
+        snr_deviation = abs(snr - target_snr)
+        if snr_deviation <= snr_tolerance:
+            reward_snr = 10 * (1 - snr_deviation / snr_tolerance)
+        else:
+            reward_snr = -5 * (snr_deviation - snr_tolerance)
+
+        # Bonus kombinasi ideal
+        if 0.55 <= cbr <= 0.65 and 25 <= snr <= 30:
+            reward_bonus = 5
+        else:
+            reward_bonus = 0
+
+        reward = reward_cbr + reward_power + reward_snr + reward_bonus
 
         next_state = np.array([
             beacon_rate,

@@ -13,7 +13,7 @@ def train_sac_on_environment():
     agent = SACAgent(state_dim, action_dim)
     logging.info("Training started.")
 
-    for ep in range(10):
+    for ep in range(20):
         state, _ = env.reset()
         total_reward = 0
         for t in range(env.max_steps):
@@ -38,7 +38,7 @@ def train_sac_on_environment():
     return agent
 
 
-def evaluate_sac_model(model_path="sac_policy_vanet.pth", num_episodes=3):
+def evaluate_sac_model(model_path="sac_policy_vanet.pth", num_episodes=5):
     env = VANETCommEnv()
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]
