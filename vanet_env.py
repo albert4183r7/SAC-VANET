@@ -6,13 +6,13 @@ class VANETCommEnv(gym.Env):
     def __init__(self):
         super().__init__()
         self.observation_space = spaces.Box(
-            low=np.array([3.0, 10.0, 0.1, 15.0]),  # [beaconRate, txPower, CBR, SNR]
-            high=np.array([10.0, 35.0, 1.0, 50.0]),
+            low=np.array([1.0, 0.0, 0.1, 0.0]),  # [beaconRate, txPower, CBR, SNR]
+            high=np.array([10.0, 20.0, 1.0, 30.0]),
             dtype=np.float32
         )
         self.action_space = spaces.Box(
-            low=np.array([3.0, 10.0]),  # [beaconRate, txPower]
-            high=np.array([10.0, 35.0]),
+            low=np.array([1.0, 0.0]),  # [beaconRate, txPower]
+            high=np.array([10.0, 20.0]),
             dtype=np.float32
         )
         self.state = None
@@ -22,10 +22,10 @@ class VANETCommEnv(gym.Env):
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
         self.state = np.array([
-            np.random.uniform(3.0, 10.0),     # beaconRate
-            np.random.uniform(10.0, 35.0),    # txPower
-            np.random.uniform(0.1, 0.8),      # CBR
-            np.random.uniform(15.0, 50.0)     # SNR
+            np.random.uniform(1.0, 10.0),    # beaconRate
+            np.random.uniform(0.0, 20.0),    # txPower
+            np.random.uniform(0.1, 1.0),     # CBR
+            np.random.uniform(0.0, 30.0)     # SNR
         ], dtype=np.float32)
         self.step_count = 0
         return self.state, {}
@@ -36,15 +36,15 @@ class VANETCommEnv(gym.Env):
         self.step_count += 1
 
         # Aproksimasi CBR dan SNR dari beacon_rate dan tx_power
-        cbr = min(1.0, 0.0008 * beacon_rate * tx_power)
-        snr = max(0, min(50, 0.9 * tx_power - 0.6 * beacon_rate + np.random.normal(0, 1)))
+        cbr = self.state[2]
+        snr = self.state[3]
 
         # --- Hitung reward ---
         omega_c = 2
         omega_p = 0.25
         target_cbr = 0.6
         target_snr = 27.5
-        snr_tolerance = 10
+        snr_tolerance = 5
 
         # CBR reward
         g_cbr = -np.sign(cbr - target_cbr) * cbr

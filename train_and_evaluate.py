@@ -13,13 +13,18 @@ def train_sac_on_environment():
     agent = SACAgent(state_dim, action_dim)
     logging.info("Training started.")
 
-    for ep in range(20):
+    num_episodes = 500
+    explore_episodes = 10  # <- episode awal pakai random action
+    for ep in range(num_episodes):
         state, _ = env.reset()
         total_reward = 0
         for t in range(env.max_steps):
-            action = agent.select_action(state)
-            scaled_action = env.action_space.low + 0.5 * (action + 1.0) * (
-                env.action_space.high - env.action_space.low)
+            if ep < explore_episodes:
+                action = np.random.uniform(low=-1, high=1, size=action_dim)
+            else:
+                action = agent.select_action(state)
+            
+            scaled_action = env.action_space.low + 0.5 * (action + 1.0) * (env.action_space.high - env.action_space.low)
             scaled_action = np.clip(scaled_action, env.action_space.low, env.action_space.high)
 
             next_state, reward, terminated, truncated, _ = env.step(scaled_action)
@@ -33,12 +38,12 @@ def train_sac_on_environment():
                 break
         logging.info(f"Episode {ep+1} finished. Total reward: {total_reward:.2f}")
 
-    torch.save(agent.policy_net.state_dict(), "sac_policy_vanet.pth")
+    torch.save(agent.policy_net.state_dict(), "sac_policy_vanet#1.pth")
     logging.info("Model saved to sac_policy_vanet.pth")
     return agent
 
 
-def evaluate_sac_model(model_path="sac_policy_vanet.pth", num_episodes=5):
+def evaluate_sac_model(model_path="sac_policy_vanet.pth", num_episodes=100):
     env = VANETCommEnv()
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.shape[0]

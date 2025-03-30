@@ -49,7 +49,7 @@ class PolicyNetwork(nn.Module):
     def forward(self, state):
         x = F.relu(self.fc1(state))
         x = F.relu(self.fc2(x))
-        mean = self.mean_linear(x)
+        mean = torch.tanh(self.mean_linear(x))
         log_std = self.log_std_linear(x)
         log_std = torch.clamp(log_std, self.log_std_min, self.log_std_max)
         return mean, log_std
