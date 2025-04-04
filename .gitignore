@@ -3,3 +3,7 @@ __pycache__/
 
 # Ignore virtual environment folders
 venv/
+
+model_comparison.py
+plot_compare.py
+model_arc.py
