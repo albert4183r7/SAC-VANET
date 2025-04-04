@@ -12,7 +12,7 @@ env = VANETCommEnv()
 state_dim = env.observation_space.shape[0]
 action_dim = env.action_space.shape[0]
 agent = SACAgent(state_dim, action_dim)
-agent.policy_net.load_state_dict(torch.load("sac_policy_vanet.pth"))
+agent.policy_net.load_state_dict(torch.load("model/custom.pth"))
 agent.policy_net.eval()
 logging.info("Model loaded and inference ready.")
 

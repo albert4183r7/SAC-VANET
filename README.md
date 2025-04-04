@@ -1,85 +1,127 @@
 # SAC-VANET: Soft Actor-Critic for VANET Communication Optimization
 
-This project uses **Soft Actor-Critic (SAC)**, a reinforcement learning algorithm, to optimize the **Beacon Rate** and **Transmit Power** in a **VANET (Vehicular Ad-hoc Network)** environment. The system is designed to ensure that **Channel Busy Ratio (CBR)** and **Signal-to-Noise Ratio (SNR)** stay within acceptable limits.
+This project applies **Soft Actor-Critic (SAC)**, a reinforcement learning algorithm, to optimize **Beacon Rate** and **Transmit Power** in **Vehicular Ad-hoc Networks (VANETs)**. The goal is to ensure that **Channel Busy Ratio (CBR)** and **Signal-to-Noise Ratio (SNR)** remain within desired thresholds.
 
-## Project Structure
+There are two types of SAC implementations:
+- **Custom**: Fully custom SAC agent built from scratch.
+- **SB3**: SAC agent built using [Stable-Baselines3 (SB3)](https://github.com/DLR-RM/stable-baselines3).
 
-- **`vanet_env.py`**: Defines the VANET communication environment for training and inference.
-- **`sac_agent.py`**: Contains the SAC agent, including policy and Q-networks, along with the replay buffer.
-- **`train_and_evaluate.py`**: Includes functions for training the SAC model and evaluating its performance.
-- **`inference_server.py`**: A socket server to run the trained model and receive real-time data for prediction.
-- **`main.py`**: Entry point for running training, evaluation, or inference through command-line arguments.
-- **`sac_policy_vanet.pth`**: The saved model from training (will be generated during training).
+---
 
-## Requirements
+## 📁 Project Structure
 
-This project requires the following Python packages:
-
-```bash
-torch>=2.0.0
-numpy>=1.23
-gymnasium>=0.29.1
+```
+SAC-VANET/
+│
+├── custom/                  ← Custom SAC agent
+│   ├── inference_server.py       # Inference server using custom agent
+│   ├── main.py                   # Entry point for training/eval/inference
+│   ├── sac_agent.py              # SAC agent, policy, Q-networks, replay buffer
+│   ├── train_and_evaluate.py     # Training and evaluation logic
+│   ├── plot.py                   # Visualize reward from custom logs
+│   └── logs/                     # Logs for custom agent
+│       ├── training_rewards.csv
+│       └── eval_results.csv
+│
+├── SB3/                    ← SB3-based SAC agent
+│   ├── main.py                     # Entry point for SB3 training/eval/inference
+│   ├── sb3_infer_server.py         # Inference server using SB3 agent
+│   ├── sb3_train_and_evaluate.py   # SB3 model training and evaluation logic
+│   ├── sb3_plot.py                 # Visualize reward from TensorBoard logs
+│   ├── logs/                       # TensorBoard logs for SB3
+│
+├── vanet_env.py            # VANET environment for custom agent
+├── plot_compare.py         # Plot comparison: SB3 vs Custom
+├── model/                  # Folder for saved models (created during training)
+├── requirements.txt        # Project dependencies
+├── README.md               # This file
+└── .gitignore
 ```
 
-To install all dependencies, use:
+---
+
+## 🧰 Requirements
+
+Install dependencies using:
+
 ```bash
 pip install -r requirements.txt
 ```
 
-## How to Use
-### 1. Training the Model
-To train the SAC model, run the following command:
+Dependencies:
+```
+torch>=2.0.0
+numpy>=1.23
+gymnasium>=0.29.1
+stable-baselines3>=2.2.1
+tensorboard
+matplotlib
+pandas
+```
+
+---
+
+## 🚀 How to Use
+
+**Train the model:**
 ```bash
-python main.py --train
+python -m {custom/SB3}.main --train
 ```
 
-This will:
-- Start training for 10 episodes.
-- Save the trained model to sac_policy_vanet.pth.
-
-
-### 2. Evaluating the Model
-
-To evaluate the trained model, run:
+**Evaluate the model:**
 ```bash
-python main.py --eval
+python -m {custom/SB3}.main --eval
 ```
 
-This will:
-- Evaluate the model over 3 episodes and print the results (Beacon Rate, Transmit Power, etc.).
-
-
-### 3. Running the Inference Server
-
-To run the inference server, which listens for incoming data on localhost:5000, use:
-```
-python main.py --serve
+**Run the inference server:**
+```bash
+python -m {custom/SB3}.main --serve
 ```
 
-The server will:
-- Accept incoming data.
-- Process the data with the trained model.
-- Return the optimized values.
+**Plot Reward:**
+```bash
+python -m {custom/SB3}.main --plot
+```
+
+**📊 Compare SB3 vs Custom**
+```bash
+python plot_compare.py
+```
+
+---
+
+## 📄 File Details
+
+- `vanet_env.py`: Defines custom VANET gym environment.
+- `plot_compare.py`: Plots reward comparison between SB3 and Custom SAC agents.
+
+### `custom/`
+- `main.py`: CLI entry point for training, evaluation, and plotting.
+- `sac_agent.py`: Implements the SAC agent from scratch (policy, critic networks, buffer).
+- `train_and_evaluate.py`: Training and evaluation functions for the custom SAC agent with CSV logging.
+- `inference_server.py`: Socket server to handle live state input and return optimized output using trained custom model.
+- `plot.py`: Visualizes training and evaluation reward curves for the custom agent.
 
 
-## File Details
-### vanet_env.py
-<p>Defines the custom environment for VANET communication. It uses gymnasium for easy integration with reinforcement learning algorithms. The environment simulates a communication scenario where the agent optimizes the Beacon Rate and Transmit Power while keeping CBR and SNR in check. </p>
+### `SB3/`
+- `main.py`: CLI entry point for training, evaluation, and plotting using SB3.
+- `sb3_train_and_evaluate.py`: Training logic using Stable-Baselines3 SAC implementation.
+- `sb3_infer_server.py`: Inference server using trained SB3 model.
+- `sb3_plot.py`: Visualizes training and evaluation reward curves for the SB3 SAC agent.
 
-### sac_agent.py
-<p>Contains the definition of the SAC agent:
-- Policy Network: For selecting actions.
-- Q-Networks: To estimate the Q-value of actions.
-- Replay Buffer: To store past experiences during training.</p>
+---
 
-### train_and_evaluate.py
-<p>Contains functions for training the SAC agent and evaluating its performance. The trained model is saved as sac_policy_vanet.pth for later use in inference.</p>
+## ✨ Logs
 
-### inference_server.py
-<p>This script starts a server listening on localhost:5000, receives state observations, and sends back the optimized actions (beacon rate, transmit power, and MCS).</p>
+- `custom/logs/`: stores `training_rewards.csv` and `eval_results.csv`
+- `SB3/logs/`: TensorBoard logs, visualizable with `tensorboard` or via plot script
 
-### main.py
-<p>This is the entry point for running training, evaluation, or inference. You can control which action to run through command-line arguments:</p>
-<div>--train: Train the model.</div>
-<div>--eval: Evaluate the model.</div>
-<div>--serve: Run the inference server.</div>
+---
+
+## 🧠 Notes
+
+- Make sure you run from the project root to ensure relative imports and log paths work.
+- For SB3 logging, use TensorBoard:
+```bash
+tensorboard --logdir SB3/logs/
+```
