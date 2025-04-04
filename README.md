@@ -32,7 +32,7 @@ SAC-VANET/
 │       ├── eval/
 │       └── SAC_VANET_1/
 │
-├── vanet_env.py            # VANET environment for custom agent
+├── vanet_env.py            # VANET environment
 ├── model/                  # Folder for saved models (created during training)
 ├── requirements.txt        # Project dependencies
 ├── README.md               # This file
