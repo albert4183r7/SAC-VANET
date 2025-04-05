@@ -89,4 +89,5 @@ if __name__ == "__main__":
             print("Training log not found.")
 
     if args.serve:
-        subprocess.run([sys.executable, "sb3_infer_server.py"])
+        subprocess.run([sys.executable, "-m", "SB3.sb3_infer_server"])
+

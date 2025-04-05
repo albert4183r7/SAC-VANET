@@ -37,4 +37,4 @@ if __name__ == "__main__":
             print("Training log not found.")
 
     if args.serve:
-        subprocess.run([sys.executable, "inference_server.py"])
+        subprocess.run([sys.executable, "-m", "inference_server.py"])
